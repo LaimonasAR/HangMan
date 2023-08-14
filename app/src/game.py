@@ -90,9 +90,16 @@ class Play(Game):
                 victory_check = False
                 break
         return victory_check
-    @staticmethod
-    def input_error(error_message):
-        return error_message
+    
+    #PLAY AGAIN should not be here
+    # @staticmethod
+    # def play_again():
+        
+    #     play_again = input("Play again? Y/N ").lower()
+        
+    #     if play_again == 
+        
+    #     return error_message
 
     @staticmethod
     def letter_input(guessed_letters):

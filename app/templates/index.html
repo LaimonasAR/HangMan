@@ -4,4 +4,14 @@
 
 <h1>Welcome to Hangman!</h1>
 
+<p class="p-6 bg-red-500">Welcome to Hangman</p>
+<p>{{users}}</p>
+    <form method="post" action="/submit">
+        <input type="text" name="name" placeholder="Enter value">
+        <input type="text" name="surname" placeholder="Enter value">
+        <input type="text" name="email" placeholder="Enter value">
+        <input type="text" name="password" placeholder="Enter value">
+        <button type="submit">Submit</button>
+    </form>
+
 {% endblock %}

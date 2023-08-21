@@ -5,12 +5,10 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
 from endpoints import accounts_api
 import httpx
-from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 Base.metadata.create_all(bind=engine)
-app = FastAPI()
-app.include_router(api_router, prefix="/api/v1")
+api = FastAPI()
+api.include_router(api_router, prefix="/api/v1")
 
 templates = Jinja2Templates(directory="templates")
 
@@ -20,7 +18,7 @@ templates = Jinja2Templates(directory="templates")
 #     return templates.TemplateResponse("item.html", {"request": request, "id": id})
 
 
-@app.get("/", response_class=HTMLResponse)
+@api.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     async with httpx.AsyncClient() as client:
         response = await client.get("http://localhost:8000/api/v1/accounts/")
@@ -37,7 +35,7 @@ async def index(request: Request):
     return templates.TemplateResponse("index.html", context)
 
 
-@app.post("/submit", response_class=HTMLResponse)
+@api.post("/submit", response_class=HTMLResponse)
 async def index(
     request: Request,
     name: str = Form(...),
@@ -63,7 +61,7 @@ async def index(
         )
 
 
-@app.get("/login", response_class=HTMLResponse)
+@api.get("/login", response_class=HTMLResponse)
 async def index(request: Request):
     # async with httpx.AsyncClient() as client:
     #     response = await client.get("http://localhost:8000/api/v1/accounts/")
@@ -79,4 +77,6 @@ async def index(request: Request):
     context = {"request": request}
     # users= accounts_api.read_accounts()
     return templates.TemplateResponse("login.html", context)
-
+ 
+ 
+ 

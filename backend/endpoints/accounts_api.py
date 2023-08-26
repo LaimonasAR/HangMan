@@ -22,8 +22,14 @@ def read_accounts(db: Session = Depends(get_db)):
     accounts = crud.account_crud.get_accounts(db)
     return accounts
 
+@router.get("/{email}", response_model=AccountResponse)
+def read_account(email: str, db: Session = Depends(get_db)):
+    db_account = crud.account_crud.get_account_by_email(db, email=email)
+    if db_account is None:
+        raise HTTPException(status_code=404, detail=f"account {email} not found")
+    return db_account
 
-@router.get("/{account_id}", response_model=AccountResponse)
+@router.get("/account/{account_id}", response_model=AccountResponse)
 def read_account(account_id: int, db: Session = Depends(get_db)):
     db_account = crud.account_crud.get_account(db, account_id=account_id)
     if db_account is None:
@@ -32,7 +38,7 @@ def read_account(account_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{account_id}", response_model=AccountResponse)
-def delete_accounts(account_id: int, db: Session = Depends(get_db)):
+def delete_account(account_id: int, db: Session = Depends(get_db)):
     try:
         db_account = crud.account_crud.delete_account(db, account_id=account_id)
         return db_account
@@ -41,7 +47,7 @@ def delete_accounts(account_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{account_id}", response_model=AccountResponse)
-def delete_accounts(
+def update_account(
     account: AccountUpdate, account_id: int, db: Session = Depends(get_db)
 ):
     try:

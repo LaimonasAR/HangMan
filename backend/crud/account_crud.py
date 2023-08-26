@@ -17,12 +17,12 @@ def get_accounts(db: Session):
 
 
 def create_account(db: Session, account: schemas.account_schemas.AccountCreate):
-    fake_hashed_password = account.password + "notreallyhashed" #has for real using hashing
+    # fake_hashed_password = account.password + "notreallyhashed" #has for real using hashing
     db_account = Account(
         name=account.name,
         surname=account.surname,
         email=account.email,
-        password=fake_hashed_password,
+        password=account.password,
     )
     db.add(db_account)
     db.commit()

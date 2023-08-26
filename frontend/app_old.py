@@ -37,18 +37,18 @@ import httpx
 #         )
 
 
-def save_picture(form_picture):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(app.root_path, "static/profilio_nuotraukos", picture_fn)
+# def save_picture(form_picture):
+#     random_hex = secrets.token_hex(8)
+#     _, f_ext = os.path.splitext(form_picture.filename)
+#     picture_fn = random_hex + f_ext
+#     picture_path = os.path.join(app.root_path, "static/profilio_nuotraukos", picture_fn)
 
-    output_size = (125, 125)
-    i = Image.open(form_picture)
-    i.thumbnail(output_size)
-    i.save(picture_path)
+#     output_size = (125, 125)
+#     i = Image.open(form_picture)
+#     i.thumbnail(output_size)
+#     i.save(picture_path)
 
-    return picture_fn
+#     return picture_fn
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -68,20 +68,20 @@ login_manager.login_view = "prisijungti"
 login_manager.login_message = "ka cia issidirbineji"
 
 
-class Vartotojas(UserMixin):
-#    __tablename__ = "vartotojas"
-    response = requests.get("http://localhost:8000/api/v1/accounts/")
+# class Vartotojas(UserMixin):
+# #    __tablename__ = "vartotojas"
+#     response = requests.get("http://localhost:8000/api/v1/accounts/")
 
-    if response.status_code == 200:
-        data = response.json()  # Assuming the response contains JSON data
-    
-    id = db.Column(db.Integer, primary_key=True)
-    vardas = db.Column("Vardas", db.String(20), unique=True, nullable=False)
-    el_pastas = db.Column(
-        "El. pašto adresas", db.String(120), unique=True, nullable=False
-    )
-    nuotrauka = db.Column(db.String(20), nullable=False, default="default.jpg")
-    slaptazodis = db.Column("Slaptažodis", db.String(60), unique=True, nullable=False)
+#     if response.status_code == 200:
+#         data = response.json()  # Assuming the response contains JSON data
+
+#     id = db.Column(db.Integer, primary_key=True)
+#     vardas = db.Column("Vardas", db.String(20), unique=True, nullable=False)
+#     el_pastas = db.Column(
+#         "El. pašto adresas", db.String(120), unique=True, nullable=False
+#     )
+#     nuotrauka = db.Column(db.String(20), nullable=False, default="default.jpg")
+#     slaptazodis = db.Column("Slaptažodis", db.String(60), unique=True, nullable=False)
 
 
 # class Irasas(db.Model):
@@ -104,13 +104,12 @@ import forms.forms
 
 @login_manager.user_loader
 def load_user(user_id: str) -> Vartotojas:
-    
     return Vartotojas.query.get(int(user_id))
 
 
 @app.route("/registruotis", methods=["GET", "POST"])
 def registruotis():
-    db.create_all()
+    # db.create_all()
     if current_user.is_authenticated:
         return redirect(url_for("index"))
     form = forms.forms.RegistracijosForma()
@@ -118,13 +117,15 @@ def registruotis():
         koduotas_slaptazodis = bcrypt.generate_password_hash(
             form.slaptazodis.data
         ).decode("utf-8")
-        vartotojas = Vartotojas(
-            vardas=form.vardas.data,
-            el_pastas=form.el_pastas.data,
-            slaptazodis=koduotas_slaptazodis,
-        )
-        db.session.add(vartotojas)
-        db.session.commit()
+        vartotojas = {
+            "name": form.vardas.data,
+            "email": form.el_pastas.data,
+            "password": koduotas_slaptazodis,
+        }
+        # db.session.add(vartotojas)
+        # db.session.commit()
+        url = "http://localhost:8000/api/v1/accounts/"
+        response = requests.post(url, json=vartotojas)
         flash("Sėkmingai prisiregistravote! Galite prisijungti", "success")
         return redirect(url_for("index"))
     return render_template("registruotis.html", title="Register", form=form)

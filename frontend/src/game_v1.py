@@ -1,5 +1,5 @@
 from rand_word import RandomWordGenerator
-
+from app import hangman 
 
 class Game:
     def __init__(self, letters) -> None:
@@ -32,6 +32,7 @@ class Play(Game):
             guessed_letters = self.cor_lett + self.incor_lett
             # valid_guess = False
             guess = self.letter_input(guessed_letters)
+            #guess = hangman.user_input
             if len(guess) > 1:
                 print(guess)
                 continue
@@ -103,9 +104,11 @@ class Play(Game):
 
     @staticmethod
     def letter_input(guessed_letters):
-        guess = input(
-            "Enter a letter :"
-        ).lower()  # this might be a problem, if not console program.
+        guessing = hangman()
+        guess = guessing
+        # guess = input(
+        #     "Enter a letter :"
+        # ).lower()  # this might be a problem, if not console program.
 
         if len(guess) != 1 and guess == "again":
             return f"Very smart, now enter a single letter "

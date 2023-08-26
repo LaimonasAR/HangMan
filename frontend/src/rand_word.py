@@ -15,6 +15,6 @@ class RandomWordGenerator:
             hasDictionaryDef="true",
             includePartOfSpeech="noun",
             minLength=self.letters,
-            maxLength=(self.letters + 5),
+            maxLength=(self.letters),
         )
         return result_wr

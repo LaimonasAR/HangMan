@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+ <center>   
+<h1 style="color: red; font-family: Arial, sans-serif; font-size: 50px;">WELCOME TO HANGMAN</h1>
+ 
+{% if current_user.is_authenticated %}
+<div>
+    <h1 style="color: red; font-family: Arial, sans-serif; font-size: 100px;"> Select difficulty from 5 to 10<h1>
+</div>
+<div class="content-section">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Select difficulty</legend>
+            <div class="form-group">
+                {{ form.difficulty.label(class="form-control-label") }}
+                {% if form.difficulty.errors %}
+                    {{ form.difficulty(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.difficulty.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.difficulty(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+
+        </fieldset>
+        <div class="form-group">
+            {{ form.play(class="btn btn-outline-info") }}
+        </div>
+    </form>
+</div>
+{% elif current_user.is_anonymous%}
+    <button><a href="{{ url_for('register') }}">Register to Play</a></button>
+    <button><a href="{{ url_for('log_in') }}">Log in to Play</a></button>
+{% endif %}
+</center>
+{% endblock %}

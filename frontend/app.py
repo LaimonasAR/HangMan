@@ -6,20 +6,12 @@ from flask_login import (
     current_user,
     logout_user,
     login_user,
-    UserMixin,
     login_required,
 )
 
-from sqlalchemy import DateTime
-from datetime import datetime
-import secrets
 import requests
-from PIL import Image
-from flask_admin import Admin
-from flask_admin.contrib.sqla import ModelView
 import forms
 import models
-from src import game
 from flask_session import Session
 from src.game import cor_lett, incor_lett, hidden_word_handling, Game
 from src.rand_word import RandomWordGenerator
@@ -31,13 +23,9 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'biudzetas.db')
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "prisijungti"
-# login_manager.login_message_category = 'info'
 login_manager.login_message = "ka cia issidirbineji"
 
 
@@ -89,24 +77,94 @@ def log_in():
         response = requests.get(
             f"http://127.0.0.1:8000/api/v1/accounts/{form.email.data}"
         )
-
         if response.status_code == 200:
             user_data = response.json()
             user_id = user_data.get("id")
-            print(user_id)
+            session["user_id"] = user_id
             user_password = user_data.get("password")
-            print(user_password)
-            # user_status = user_data.get("is_active")
             user_status = True
             if user_data and bcrypt.check_password_hash(
                 user_password, form.password.data
             ):
                 user = models.User(id=user_id, is_active=user_status)
+                pwd_hash = bcrypt.generate_password_hash(form.password.data).decode(
+                    "utf-8"
+                )
+                session["password"] = pwd_hash
+                session["email"] = form.email.data
                 login_user(user, remember=form.remember.data)
                 return redirect(url_for("index"))
             else:
-                flash("Login failed. Check email email and password", "danger")
+                flash("Login failed. Check email and password", "danger")
     return render_template("log_in.html", title="Login", form=form)
+
+
+@login_required
+@app.route("/account", methods=["GET", "POST"])
+def account():
+    form = forms.AccountUpdateForm()
+    if form.validate_on_submit():
+        response = requests.get(
+            f"http://127.0.0.1:8000/api/v1/accounts/{form.email.data}"
+        )
+        if response.status_code == 200:
+            flash("Email already registered!", "danger")
+            return redirect(url_for("account"))
+        else:
+            user_data = {
+                "email": form.email.data,
+                "name": form.name.data,
+                "surname": form.surname.data,
+            }
+            user_id = session.get("user_id")
+            response = requests.put(
+                f"http://localhost:8000/api/v1/accounts/{user_id}", json=user_data
+            )
+            if response.status_code == 200:
+                flash("Account updated successfully!", "success")
+                return redirect(url_for("account"))
+            else:
+                flash("Changes failed. Check data", "danger")
+    return render_template("account.html", form=form)
+
+
+@login_required
+@app.route("/pass_change", methods=["GET", "POST"])
+def pass_change():
+    form = forms.PasswordChangeForm()
+    if form.validate_on_submit():
+        email = session.get("email")
+        password = session.get("password")
+        print(password)
+        new_pass = bcrypt.generate_password_hash(form.old_password.data).decode("utf-8")
+        print(new_pass)
+        response = requests.get(f"http://127.0.0.1:8000/api/v1/accounts/{email}")
+        if response.status_code == 200 and bcrypt.check_password_hash(
+            password, form.old_password.data
+        ):
+            hashed_pass = bcrypt.generate_password_hash(form.new_password.data).decode(
+                "utf-8"
+            )
+            user_data = {
+                "password": hashed_pass,
+            }
+            user_id = session.get("user_id")
+            response2 = requests.put(
+                f"http://localhost:8000/api/v1/accounts/password/{user_id}",
+                json=user_data,
+            )
+            session["password"] = hashed_pass
+            if response2.status_code == 200:
+                flash(
+                    "Password changed successfully! Please, log out and log in again!",
+                    "success",
+                )
+                return redirect(url_for("pass_change"))
+            else:
+                flash("Changes failed. Check password", "danger")
+        else:
+            flash("Changes failed. Check password", "danger")
+    return render_template("pass_change.html", form=form)
 
 
 @login_required
@@ -137,23 +195,40 @@ def start():
 @app.route("/play", methods=["GET", "POST"])
 def play():
     form = forms.LetterGuess()
-
     if form.validate_on_submit():
-        # if request.method == "POST":
         guess = form.letter.data
-        # guess = request.form.get("letter")
         game = Game(
             session.get("word"),
             session.get("cor_lett"),
             session.get("incor_lett"),
             guess,
         )
-        # response = game.play(session["word"], session["cor_lett"], session["incor_lett"], guess)
         response = game.play()
-        print(response)
+        user_id = session.get("user_id")
+
         if response["game_over"] == True and response["victory"] == True:
+            game_data = {
+                "word": session.get("word"),
+                "status": True,
+                "corrlett": response["cor_lett"],
+                "incorrlett": response["incor_lett"],
+                "error_count": len(response["incor_lett"]),
+            }
+            response = requests.post(
+                f"http://127.0.0.1:8000/api/v1/games/{user_id}", json=game_data
+            )
             return render_template("victory.html")
         elif response["game_over"] == True and response["victory"] == False:
+            game_data = {
+                "word": session.get("word"),
+                "status": False,
+                "corrlett": response["cor_lett"],
+                "incorrlett": response["incor_lett"],
+                "error_count": len(response["incor_lett"]),
+            }
+            response = requests.post(
+                f"http://127.0.0.1:8000/api/v1/games/{user_id}", json=game_data
+            )
             return render_template("defeat.html")
         else:
             session["message"] = response["message"]
@@ -168,20 +243,15 @@ def play():
     bad_tries = len(incor_lett)
     message = session.get("message")
     word = session.get("word")
-    # remove these
-    # game_over = response["game_over"]
-    # victory = response["victory"]
     return render_template(
         "play.html",
         hidden_word=hidden_word,
         cor_lett=cor_lett,
         incor_lett=incor_lett,
         # picture=bad_tries,
-        picture='images/0.jpg',
+        picture="images/0.jpg",
         message=message,
         word=word,
-        # game_over=game_over,
-        # victory=victory,
         form=form,
     )
 
@@ -211,52 +281,3 @@ def get():
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
-
-
-# @app.route("/game_old", methods=["GET", "POST"])
-# @login_required
-# def play_game():
-#     # global game_id
-#     try:
-#         letter = request.form["letter"]
-#         play_data = {"game_id": game_id, "guess_letter": letter}
-#     except (NameError, KeyError):
-#         return redirect(url_for("game"))
-
-#     game_response = requests.post(
-#         f"http://127.0.0.1:1337/api/v1/games/play/{game_id}", json=play_data
-#     )
-#     if game_response.status_code == 200:
-#         game_data = game_response.json()
-#         game_tries = game_data.get("game_tries")
-#         game_display = game_data.get("game_display")
-#         game_word_set = game_data.get("game_word_set")
-#         game_status = game_data.get("status")
-
-#     guesses = requests.get(
-#         f"http://127.0.0.1:1337/api/v1/guesses/game_guesses/{game_id}"
-#     )
-#     if guesses.status_code == 200:
-#         guesses_data = guesses.json()
-#         user_guesses = [item.get("guess_letter") for item in guesses_data]
-
-#     while game_status == "NEW":
-#         return render_template(
-#             "game.html",
-#             game_display=game_display,
-#             game_word_set=game_word_set,
-#             game_draw="/static/img/hang%d.png" % game_tries,
-#             game_tries=game_tries,
-#             user_guesses=user_guesses,
-#         )
-
-#     return render_template(
-#         "results.html",
-#         game_status=game_status,
-#         game_word=game_word,
-#         game_display=game_display,
-#         game_word_set=game_word_set,
-#         game_draw="/static/img/hang%d.png" % game_tries,
-#         game_tries=game_tries,
-#         user_guesses=user_guesses,
-#     )

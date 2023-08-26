@@ -5,7 +5,6 @@
         {{ form.hidden_tag() }}
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">Paskyros informacija</legend>
-            <img class="rounded-circle account-img" src="{{ nuotrauka }}">
             <div class="form-group">
                 {{ form.name.label(class="form-control-label") }}
                 {% if form.name.errors %}
@@ -48,6 +47,7 @@
         </fieldset>
         <div class="form-group">
             {{ form.submit(class="btn btn-outline-info") }}
+            <button class="btn btn-outline-info"><a href="{{ url_for('pass_change') }}">Change password</a></button>
         </div>
     </form>
 </div>

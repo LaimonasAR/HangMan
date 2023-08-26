@@ -57,3 +57,17 @@ class AccountUpdate(BaseModel):
                 "password": "1234",
             }
         }
+class PasswordUpdate(BaseModel):
+    password: Optional[str]
+
+    class Config:
+        orm_mode = True
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "name": "Antanas",
+                "surname": "Fontanas",
+                "email": "antanas123@gmail.com",
+                "password": "1234",
+            }
+        }

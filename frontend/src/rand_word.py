@@ -17,4 +17,4 @@ class RandomWordGenerator:
             minLength=self.letters,
             maxLength=(self.letters),
         )
-        return result_wr
+        return result

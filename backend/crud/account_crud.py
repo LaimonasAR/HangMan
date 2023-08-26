@@ -52,3 +52,16 @@ def update_account(
         return db_account
     else:
         raise NoResultFound
+
+def update_password(
+    db: Session, account_id: int, password: schemas.account_schemas.PasswordUpdate
+):
+    db_account = get_account(db, account_id)
+    account_data = password.model_dump(exclude_unset=True)
+    if db_account:
+        for key, value in account_data.items():
+            setattr(db_account, key, value)
+        db.commit()
+        return db_account
+    else:
+        raise NoResultFound

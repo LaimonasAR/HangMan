@@ -41,7 +41,7 @@ class LoginForm(FlaskForm):
 class PasswordChangeForm(FlaskForm):
     old_password = PasswordField("Current password", [validators.DataRequired()])
     new_password = PasswordField("New Password", [validators.DataRequired()])
-    new_password_validation = PasswordField(
+    new_password_conf = PasswordField(
         "Repeat new password",
         [validators.EqualTo("new_password", "Passwords must match.")],
     )
@@ -50,7 +50,7 @@ class PasswordChangeForm(FlaskForm):
 
 class AccountUpdateForm(FlaskForm):
     name = StringField("Name", [validators.DataRequired()])
-    surname = StringField("Surname", [validators.DataRequired(), check_user])
+    surname = StringField("Surname", [validators.DataRequired()])
     email = StringField("Email", [validators.DataRequired()])
     submit = SubmitField("Update")
 

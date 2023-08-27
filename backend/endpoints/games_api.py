@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
-from schemas.account_schemas import AccountCreate, AccountResponse, AccountUpdate
 from schemas.game_schemas import (
     GameCreate,
     GameResponse,
@@ -10,7 +9,6 @@ import crud.game_crud
 import crud.account_crud
 from database.db import get_db
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.exc import NoResultFound
 
 router = APIRouter()
 

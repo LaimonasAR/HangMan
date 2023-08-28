@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-image: url('./fog.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+img {
+  max-width: 50%;
+  height: auto;
+  border: 1px solid #fd0202;
+  padding: 5px;
+}

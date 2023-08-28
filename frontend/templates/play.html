@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<center>   
+<h1 style="color: red; font-family: Arial, sans-serif; font-size: 100px;">LET'S PLAY</h1>
+<div class="text-center"> 
+    <img src="{{url_for('static', filename=picture)}}">
+</div>   
+<div>
+    <h1 style="color: blue; font-family: Arial, sans-serif; font-size: 50px;">Letters guessed incorrectly<p>
+</div>
+<div>
+    <h1 style="color: green; font-family: Arial, sans-serif; font-size: 50px;">{{ incor_lett }}<p>
+</div>
+<div>
+    <h1 style="color: red; font-family: Arial, sans-serif; font-size: 100px;"> {{ hidden_word }}<h1>
+</div>
+<div class="content-section">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Submit guess</legend>
+            <div class="form-group">
+                {{ form.letter.label(class="form-control-label") }}
+                {% if form.letter.errors %}
+                    {{ form.letter(class="form-control form-control-lg is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.letter.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.letter(class="form-control form-control-lg") }}
+                {% endif %}
+            </div>
+
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+    </form>
+</div>
+<div>
+    <h1 style="color: red; font-family: Arial, sans-serif; font-size: 100px;">{{ message }}<h1>
+</div>
+<div>
+    <h1 style="color: red; font-family: Arial, sans-serif; font-size: 100px;"> {{ word }}<h1>
+</div> 
+</center> 
+{% endblock %}

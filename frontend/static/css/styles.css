@@ -7,6 +7,8 @@ body {
 }
 
 img {
-  max-width: 100%;
+  max-width: 50%;
   height: auto;
+  border: 1px solid #fd0202;
+  padding: 5px;
 }

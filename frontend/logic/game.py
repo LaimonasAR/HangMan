@@ -1,4 +1,4 @@
-from src.rand_word import RandomWordGenerator
+from logic.rand_word import RandomWordGenerator
 
 cor_lett: str = ""
 incor_lett: str = ""
@@ -94,7 +94,7 @@ class Game:
             message = "Not OK, bad guess"
             hidden_word = hidden_word_handling(self.word, self.cor_lett)
             victory = False
-            if len(incor_lett) == 7:
+            if len(incor_lett) == 6:
                 message = ("bad luck!")
                 self.game_over = True
             response = {
@@ -108,60 +108,3 @@ class Game:
             }
             return response
 
-
-# ____________________________________________________________________________________
-# from flask import Flask, redirect, url_for, request, render_template
-# from flask_session import Session
-# from game import word_to_guess, cor_lett, incor_lett, letters, hidden_word_handling
-
-# app = Flask(__name__)
-# app.config["SESSION_PERMANENT"] = False
-# app.config["SESSION_TYPE"] = "filesystem"
-# sess = Session(app)
-
-
-# @app.route('/')
-# # ‘/’ URL is bound with hello_world() function.
-# def hello_world():
-#     return render_template('index.html')
-
-# @app.route('/start', methods=['POST', 'GET'])
-# # ‘/’ URL is bound with hello_world() function.
-# def hello_world():
-#     if request.method == 'POST':
-#         difficulty = request.form["difficulty"]
-#         sess["word"] = word_to_guess
-#         sess["hidden_word"] = hidden_word_handling(sess['word'])
-#         sess["cor_lett"] = cor_lett
-#         sess["incor_lett"] = incor_lett
-#         sess["letters"] = difficulty
-#         sess["game_state"] = 0
-
-#         return redirect(url_for('play'))
-#     else:
-#         return redirect(url_for('game'))
-#     return 'Hello World'
-
-# @app.route('/game')
-# def play():
-
-#     return render_template("login.html")
-
-
-# @app.route('/success/<name>')
-# def success(name):
-#     return 'welcome %s' % name
-
-
-# @app.route('/login', methods=['POST', 'GET'])
-# def login():
-#     if request.method == 'POST':
-#         user = request.form['nm']
-#         return redirect(url_for('success', name=user))
-#     else:
-#         user = request.args.get('nm')
-#         return redirect(url_for('success', name=user))
-
-
-# if __name__ == '__main__':
-#     app.run(debug=True)

@@ -1,4 +1,4 @@
-import os
+# import os
 from flask import Flask, render_template, redirect, url_for, flash, request, session
 from flask_bcrypt import Bcrypt
 from flask_login import (
@@ -13,11 +13,11 @@ import requests
 import forms
 import models
 from flask_session import Session
-from src.game import cor_lett, incor_lett, hidden_word_handling, Game
-from src.rand_word import RandomWordGenerator
+from logic.game import cor_lett, incor_lett, hidden_word_handling, Game
+from logic.rand_word import RandomWordGenerator
 
-basedir = os.path.abspath(os.path.dirname(__file__))
-app = Flask(__name__)
+# basedir = os.path.abspath(os.path.dirname(__file__))
+app = Flask(__name__, static_folder="static")
 app.config["SECRET_KEY"] = "4654f5dfadsrfasdr54e6rae"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
@@ -183,12 +183,28 @@ def start():
         session["incor_lett"] = incor_lett
         session["letters"] = difficulty
         session["message"] = ""
-        # session["letters"] = 5
-        # session["game_state"] = 0
-
         return redirect(url_for("play"))
     else:
-        return render_template("start.html", form=form)
+        user_id = session["user_id"]
+        response = requests.get(f"http://127.0.0.1:8000/api/v1/games/{user_id}")
+        response_data = response.json()
+        user_data = []
+        if response.status_code == 200:
+            for game in response_data:
+                if game["status"] is True:
+                    status = "Won"
+                else:
+                    status = "Lost"
+                game_data = {
+                    "Word": game["word"],
+                    "Correct letters": game["corrlett"],
+                    "Incorrect letters": game["incorrlett"],
+                    "Errors": game["error_count"],
+                    "Won/lost": status,
+                }
+                user_data.append(game_data)
+
+        return render_template("start.html", form=form, data=user_data)
 
 
 @login_required
@@ -205,7 +221,7 @@ def play():
         )
         response = game.play()
         user_id = session.get("user_id")
-
+        
         if response["game_over"] == True and response["victory"] == True:
             game_data = {
                 "word": session.get("word"),
@@ -214,10 +230,13 @@ def play():
                 "incorrlett": response["incor_lett"],
                 "error_count": len(response["incor_lett"]),
             }
-            response = requests.post(
+            response2 = requests.post(
                 f"http://127.0.0.1:8000/api/v1/games/{user_id}", json=game_data
             )
-            return render_template("victory.html")
+            incor_lett = response["incor_lett"]
+            bad_tries = len(incor_lett)
+            picture="/images/%d.jpg" % bad_tries
+            return render_template("victory.html", picture=picture)
         elif response["game_over"] == True and response["victory"] == False:
             game_data = {
                 "word": session.get("word"),
@@ -226,7 +245,7 @@ def play():
                 "incorrlett": response["incor_lett"],
                 "error_count": len(response["incor_lett"]),
             }
-            response = requests.post(
+            response2 = requests.post(
                 f"http://127.0.0.1:8000/api/v1/games/{user_id}", json=game_data
             )
             return render_template("defeat.html")
@@ -236,24 +255,26 @@ def play():
             session["cor_lett"] = response["cor_lett"]
             session["incor_lett"] = response["incor_lett"]
         return redirect(url_for("play"))
-    hidden_word = session.get("hidden_word")
-    cor_lett = session.get("cor_lett")
-    incor_lett = session.get("incor_lett")
-    # picture = "/static/img/%.jpg" % 1
-    bad_tries = len(incor_lett)
-    message = session.get("message")
-    word = session.get("word")
-    return render_template(
-        "play.html",
-        hidden_word=hidden_word,
-        cor_lett=cor_lett,
-        incor_lett=incor_lett,
-        # picture=bad_tries,
-        picture="images/0.jpg",
-        message=message,
-        word=word,
-        form=form,
-    )
+    else:
+        hidden_word = session.get("hidden_word")
+        cor_lett = session.get("cor_lett")
+        incor_lett = session.get("incor_lett")
+        # picture = "/static/img/%.jpg" % 1
+        bad_tries = len(incor_lett)
+        message = session.get("message")
+        word = session.get("word")
+        return render_template(
+            "play.html",
+            hidden_word=hidden_word,
+            cor_lett=cor_lett,
+            incor_lett=incor_lett,
+            # picture=bad_tries,
+            # picture="images/0.jpg",
+            picture="/images/%d.jpg" % bad_tries,
+            message=message,
+            word=word,
+            form=form,
+        )
 
 
 @login_required

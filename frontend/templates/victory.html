@@ -2,7 +2,10 @@
 
 {% block content %}
  <center>   
-<h1 style="color: red; font-family: Arial, sans-serif; font-size: 50px;">victory</h1>
+<h1 style="color: red; font-family: Arial, sans-serif; font-size: 50px;">Victory!</h1>
+<div class="text-center"> 
+    <img src="{{url_for('static', filename=picture)}}">
+</div>  
  
 {% if current_user.is_authenticated %}
     <button><a href="{{ url_for('start') }}">PLAY AGAIN</a></button>

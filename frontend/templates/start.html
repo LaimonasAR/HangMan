@@ -35,6 +35,7 @@
 </div>
 <div>
     <table class="table table-dark table-hover">
+        {% if data %}
         <thead>
             <tr>
                 {% for key in data[0].keys() %}
@@ -51,7 +52,9 @@
             </tr>
             {% endfor %}
         </tbody>
+        {% endif %}
     </table>
+
 </div>
 {% elif current_user.is_anonymous%}
     <button><a href="{{ url_for('register') }}">Register to Play</a></button>

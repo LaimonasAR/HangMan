@@ -1,4 +1,4 @@
-# import os
+
 from flask import Flask, render_template, redirect, url_for, flash, request, session
 from flask_bcrypt import Bcrypt
 from flask_login import (
@@ -16,7 +16,6 @@ from flask_session import Session
 from logic.game import cor_lett, incor_lett, hidden_word_handling, Game
 from logic.rand_word import RandomWordGenerator
 
-# basedir = os.path.abspath(os.path.dirname(__file__))
 app = Flask(__name__, static_folder="static")
 app.config["SECRET_KEY"] = "4654f5dfadsrfasdr54e6rae"
 app.config["SESSION_PERMANENT"] = False
@@ -31,7 +30,9 @@ login_manager.login_message = "ka cia issidirbineji"
 
 @login_manager.user_loader
 def load_user(user_id: int):
-    user_data = requests.get(f"http://localhost:8000/api/v1/accounts/account/{user_id}")
+    user_data = requests.get(
+        f"http://host.docker.internal:8000/api/v1/accounts/account/{user_id}"
+    )
     if user_data.status_code == 200:
         user_dict = user_data.json()
         user = models.User(id=user_dict["id"], is_active=True)
@@ -58,10 +59,8 @@ def register():
             "password": pwd_hash,
         }
         response = requests.post(
-            "http://localhost:8000/api/v1/accounts/", json=user_data
+            "http://host.docker.internal:8000/api/v1/accounts/", json=user_data
         )
-        # flash("Account created successfully!", "success")
-        # return redirect(url_for("log_in"))
         if response.status_code == 200:
             flash("Account created successfully!", "success")
             return redirect(url_for("log_in"))
@@ -75,7 +74,7 @@ def log_in():
     form = forms.LoginForm()
     if form.validate_on_submit():
         response = requests.get(
-            f"http://127.0.0.1:8000/api/v1/accounts/{form.email.data}"
+            f"http://host.docker.internal:8000/api/v1/accounts/{form.email.data}"
         )
         if response.status_code == 200:
             user_data = response.json()
@@ -105,7 +104,7 @@ def account():
     form = forms.AccountUpdateForm()
     if form.validate_on_submit():
         response = requests.get(
-            f"http://127.0.0.1:8000/api/v1/accounts/{form.email.data}"
+            f"http://host.docker.internal:8000/api/v1/accounts/{form.email.data}"
         )
         if response.status_code == 200:
             flash("Email already registered!", "danger")
@@ -118,7 +117,8 @@ def account():
             }
             user_id = session.get("user_id")
             response = requests.put(
-                f"http://localhost:8000/api/v1/accounts/{user_id}", json=user_data
+                f"http://host.docker.internal:8000/api/v1/accounts/{user_id}",
+                json=user_data,
             )
             if response.status_code == 200:
                 flash("Account updated successfully!", "success")
@@ -138,7 +138,9 @@ def pass_change():
         print(password)
         new_pass = bcrypt.generate_password_hash(form.old_password.data).decode("utf-8")
         print(new_pass)
-        response = requests.get(f"http://127.0.0.1:8000/api/v1/accounts/{email}")
+        response = requests.get(
+            f"http://host.docker.internal:8000/api/v1/accounts/{email}"
+        )
         if response.status_code == 200 and bcrypt.check_password_hash(
             password, form.old_password.data
         ):
@@ -150,7 +152,7 @@ def pass_change():
             }
             user_id = session.get("user_id")
             response2 = requests.put(
-                f"http://localhost:8000/api/v1/accounts/password/{user_id}",
+                f"http://host.docker.internal:8000/api/v1/accounts/password/{user_id}",
                 json=user_data,
             )
             session["password"] = hashed_pass
@@ -186,7 +188,9 @@ def start():
         return redirect(url_for("play"))
     else:
         user_id = session["user_id"]
-        response = requests.get(f"http://127.0.0.1:8000/api/v1/games/{user_id}")
+        response = requests.get(
+            f"http://host.docker.internal:8000/api/v1/games/{user_id}"
+        )
         response_data = response.json()
         user_data = []
         if response.status_code == 200:
@@ -221,7 +225,7 @@ def play():
         )
         response = game.play()
         user_id = session.get("user_id")
-        
+
         if response["game_over"] == True and response["victory"] == True:
             game_data = {
                 "word": session.get("word"),
@@ -231,11 +235,12 @@ def play():
                 "error_count": len(response["incor_lett"]),
             }
             response2 = requests.post(
-                f"http://127.0.0.1:8000/api/v1/games/{user_id}", json=game_data
+                f"http://host.docker.internal:8000/api/v1/games/{user_id}",
+                json=game_data,
             )
             incor_lett = response["incor_lett"]
             bad_tries = len(incor_lett)
-            picture="/images/%d.jpg" % bad_tries
+            picture = "/images/%d.jpg" % bad_tries
             return render_template("victory.html", picture=picture)
         elif response["game_over"] == True and response["victory"] == False:
             game_data = {
@@ -246,7 +251,8 @@ def play():
                 "error_count": len(response["incor_lett"]),
             }
             response2 = requests.post(
-                f"http://127.0.0.1:8000/api/v1/games/{user_id}", json=game_data
+                f"http://host.docker.internal:8000/api/v1/games/{user_id}",
+                json=game_data,
             )
             return render_template("defeat.html")
         else:
@@ -259,7 +265,6 @@ def play():
         hidden_word = session.get("hidden_word")
         cor_lett = session.get("cor_lett")
         incor_lett = session.get("incor_lett")
-        # picture = "/static/img/%.jpg" % 1
         bad_tries = len(incor_lett)
         message = session.get("message")
         word = session.get("word")
@@ -268,8 +273,6 @@ def play():
             hidden_word=hidden_word,
             cor_lett=cor_lett,
             incor_lett=incor_lett,
-            # picture=bad_tries,
-            # picture="images/0.jpg",
             picture="/images/%d.jpg" % bad_tries,
             message=message,
             word=word,
@@ -301,4 +304,4 @@ def get():
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

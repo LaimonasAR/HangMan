@@ -1,11 +1,9 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileAllowed
 from wtforms import (
     SubmitField,
     BooleanField,
     StringField,
     PasswordField,
-    FloatField,
     IntegerField,
     ValidationError,
     validators,
@@ -13,9 +11,8 @@ from wtforms import (
 import requests
 
 
-# import app
 def check_user(form, email):
-    user = requests.get("http://localhost:8000/api/v1/accounts/{email}")
+    user = requests.get(f"http://host.docker.internal:8000/api/v1/accounts/{email}")
     if user:
         raise ValidationError("This email is already in use. Please choose another.")
 

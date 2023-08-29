@@ -10,7 +10,7 @@ message = "Let's start!"
 
 
 def hidden_word_handling(word, cor_letters):
-    hidden_word = " _ " * len(word)
+    hidden_word = "_" * len(word)
     for i in range(len(word)):
         if word[i] in cor_letters:
             hidden_word = hidden_word[:i] + word[i] + hidden_word[i + 1 :]

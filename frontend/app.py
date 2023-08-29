@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, redirect, url_for, flash, request, session
 from flask_bcrypt import Bcrypt
 from flask_login import (
@@ -15,6 +14,12 @@ import models
 from flask_session import Session
 from logic.game import cor_lett, incor_lett, hidden_word_handling, Game
 from logic.rand_word import RandomWordGenerator
+import logging
+import logging.config
+
+
+logging.config.fileConfig(fname="logging.conf", disable_existing_loggers=False)
+logger = logging.getLogger("sLogger")
 
 app = Flask(__name__, static_folder="static")
 app.config["SECRET_KEY"] = "4654f5dfadsrfasdr54e6rae"
@@ -63,9 +68,11 @@ def register():
         )
         if response.status_code == 200:
             flash("Account created successfully!", "success")
+            logger.info(f"Account created {form.email.data}")
             return redirect(url_for("log_in"))
         else:
             flash("Failed to create account. Email already in use.", "danger")
+            logger.warning(f"Email {form.email.data} already exists")
     return render_template("register.html", form=form)
 
 
@@ -92,9 +99,11 @@ def log_in():
                 session["password"] = pwd_hash
                 session["email"] = form.email.data
                 login_user(user, remember=form.remember.data)
+                logger.info(f"Account logged in {form.email.data}")
                 return redirect(url_for("index"))
             else:
                 flash("Login failed. Check email and password", "danger")
+                logger.warning(f"Account {form.email.data} failed to log in")
     return render_template("log_in.html", title="Login", form=form)
 
 
@@ -122,9 +131,11 @@ def account():
             )
             if response.status_code == 200:
                 flash("Account updated successfully!", "success")
+                logger.info(f"Account data for user_id {user_id} changed")
                 return redirect(url_for("account"))
             else:
                 flash("Changes failed. Check data", "danger")
+                logger.warning(f"Account data failed to change for user_id {user_id}")
     return render_template("account.html", form=form)
 
 
@@ -161,11 +172,14 @@ def pass_change():
                     "Password changed successfully! Please, log out and log in again!",
                     "success",
                 )
+                logger.info(f"Account password for user {email} changed")
                 return redirect(url_for("pass_change"))
             else:
                 flash("Changes failed. Check password", "danger")
+                logger.warning(f"Account password change for user {email} failed")
         else:
             flash("Changes failed. Check password", "danger")
+            logger.warning(f"Account password change for user {email} failed")
     return render_template("pass_change.html", form=form)
 
 
@@ -177,6 +191,7 @@ def start():
         difficulty = request.form["difficulty"]
         word_to_guess = RandomWordGenerator(difficulty)
         word = word_to_guess.rand_word()
+        word = word.lower()
         session["word"] = word
         session["hidden_word"] = hidden_word_handling(
             session.get("word"), cor_letters=cor_lett
@@ -207,7 +222,7 @@ def start():
                     "Won/lost": status,
                 }
                 user_data.append(game_data)
-
+        logger.info(f"Game started for user {user_id}")
         return render_template("start.html", form=form, data=user_data)
 
 
@@ -241,6 +256,7 @@ def play():
             incor_lett = response["incor_lett"]
             bad_tries = len(incor_lett)
             picture = "/images/%d.jpg" % bad_tries
+            logger.info(f"Game won for user {user_id}")
             return render_template("victory.html", picture=picture)
         elif response["game_over"] == True and response["victory"] == False:
             game_data = {
@@ -254,8 +270,10 @@ def play():
                 f"http://host.docker.internal:8000/api/v1/games/{user_id}",
                 json=game_data,
             )
+            logger.info(f"Game lost for user {user_id}")
             return render_template("defeat.html")
         else:
+            logger.info(f"Next move for user {user_id}")
             session["message"] = response["message"]
             session["hidden_word"] = response["hidden_word"]
             session["cor_lett"] = response["cor_lett"]
@@ -284,6 +302,7 @@ def play():
 @app.route("/log_off")
 def atsijungti():
     logout_user()
+    logger.info(f"User logged out")
     return redirect(url_for("index"))
 
 

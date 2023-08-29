@@ -39,7 +39,7 @@ Before you begin, make sure you have the following software installed:
    ```bash
    cd HangMan
    
-3. From `env.template` build Your own `.env` file and put it in `./backend/` folder. 
+3. From `env.template.txt` build Your own `.env` file and put it in `./backend/` folder. 
 
 4. Build and start the application using Docker Compose:
    ```bash

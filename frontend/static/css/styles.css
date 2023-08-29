@@ -12,3 +12,10 @@ img {
   border: 1px solid #fd0202;
   padding: 5px;
 }
+
+.custom-courier {
+  font-family: Arial, sans-serif;
+  color: red;
+  font-size: 100px;
+  letter-spacing: 5px;
+}

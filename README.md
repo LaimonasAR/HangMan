@@ -38,11 +38,15 @@ Before you begin, make sure you have the following software installed:
 2. Navigate to the repository directory:
    ```bash
    cd HangMan
-   
-3. Build and start the application using Docker Compose:
+
+3. From `env.template.txt` build Your own `.env` file and put it in `./backend/` folder. 
+
+4. Build and start the application using Docker Compose:
+
    ```bash
    docker-compose up -d --build
 This command will build and start the backend and frontend services.
+
 
 ### Usage
 Access the Hangman web app by opening your web browser and navigating to `http://localhost:5000`.

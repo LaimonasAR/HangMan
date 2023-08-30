@@ -4,25 +4,22 @@ from models.games import Game
 import schemas.game_schemas
 from models.account import Account
 import schemas.account_schemas
+from typing import List, Optional
 
 
-def get_account(db: Session, account_id: int):
+def get_account(db: Session, account_id: int) -> Account:
     return db.query(Account).filter(Account.id == account_id).first()
 
 
-def get_games(db: Session, account_id: int):
-    return (
-        db.query(Game)
-        .filter(Game.account_id == account_id)
-        .all()
-    )
+def get_games(db: Session, account_id: int) -> Game:
+    return db.query(Game).filter(Game.account_id == account_id).all()
 
 
 def create_game(
     db: Session,
     account_id,
     game: schemas.game_schemas.GameCreate,
-):
+) -> Optional[Game]:
     db_account = get_account(db, account_id)
     if db_account:
         db_game = Game(
@@ -41,17 +38,13 @@ def create_game(
         return NoResultFound
 
 
-def get_game_score(db: Session, account_id: int):
-    games = list(
-        db.query(Game)
-        .filter(Game.account_id == account_id)
-        .all()
-    )
+def get_game_score(db: Session, account_id: int) -> Optional[Game]:
+    games = list(db.query(Game).filter(Game.account_id == account_id).all())
     if games:
         totals = 0
         for game in games:
-            if game.status is True :
-                totals += (10 - game.error_count)
+            if game.status is True:
+                totals += 10 - game.error_count
             elif game.status is False:
                 totals -= game.error_count
         return totals

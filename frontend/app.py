@@ -34,7 +34,7 @@ login_manager.login_message = "ka cia issidirbineji"
 
 
 @login_manager.user_loader
-def load_user(user_id: int):
+def load_user(user_id: int) -> models.User:
     user_data = requests.get(
         f"http://host.docker.internal:8000/api/v1/accounts/account/{user_id}"
     )

@@ -9,7 +9,7 @@ incor_lett: str = ""
 message = "Let's start!"
 
 
-def hidden_word_handling(word, cor_letters):
+def hidden_word_handling(word:str, cor_letters:str) -> str:
     hidden_word = "_" * len(word)
     for i in range(len(word)):
         if word[i] in cor_letters:
@@ -17,7 +17,7 @@ def hidden_word_handling(word, cor_letters):
     return hidden_word
 
 class Game:
-    def __init__(self, word, cor_lett, incor_lett, guess) -> None:
+    def __init__(self, word:str, cor_lett:str, incor_lett:str, guess:str) -> None:
         self.word = word
         self.cor_lett = cor_lett
         self.incor_lett = incor_lett
@@ -25,7 +25,7 @@ class Game:
         self.game_over = False
 
     @staticmethod
-    def victory_check(word, cor_lett):
+    def victory_check(word:str, cor_lett:str) -> bool:
         victory_check = True
         for i in range(len(word)):
             if word[i] not in cor_lett:
@@ -34,7 +34,7 @@ class Game:
         return victory_check
 
     @staticmethod
-    def checkguess(guess, guessed_letters):
+    def checkguess(guess:str, guessed_letters:str) ->str:
         guessed = guess.lower()
         if len(guessed) != 1:
             logger.warning("Too many symbols")
@@ -48,7 +48,7 @@ class Game:
         else:
             return guessed
 
-    def play(self):
+    def play(self) -> dict:
         guessed_letters = self.cor_lett + self.incor_lett
         guessed = self.checkguess(self.guess, guessed_letters)
         hidden_word = hidden_word_handling(self.word, self.cor_lett)
